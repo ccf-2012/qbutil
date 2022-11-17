@@ -89,7 +89,7 @@ def torSameSize(sizeA, sizeB):
         return sizeA == sizeB
     elif sizeA < 1000000000:
         return (abs(sizeA-sizeB) < 2000)
-    elif sizeA < 30000000000:
+    elif sizeA < 50000000000:
         return (abs(sizeA-sizeB) < 10000)
     else:
         return (abs(sizeA-sizeB) < 2000000)
