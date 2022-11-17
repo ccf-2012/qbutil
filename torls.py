@@ -50,7 +50,7 @@ def listQbNotWorking():
     if not qbClient:
         return False
 
-    count = 0
+    countNotWorking = 0
     for torrent in qbClient.torrents_info(sort='name'):
         # breakpoint()
         # 这里偷懒了，多tracker情况这里就不对了，用者自行想办法了
@@ -58,17 +58,17 @@ def listQbNotWorking():
 
         # 列出tracker 未工作
         if tr3['status'] == 4:
-            count += 1
+            countNotWorking += 1
             printTorrent(torrent, tr3["msg"])
             torrent.addTags(['未工作'])
         else:
             torrent.removeTags(['未工作'])
 
-    print(f'Total: {count}')
+    print(f'Total not working: {countNotWorking}')
 
 
 def printTorrent(torrent, trackMessage=''):
-    print( f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({HumanBytes.format(torrent.total_size, True)})' )
+    print(f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({HumanBytes.format(torrent.total_size, True)})')
     print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m    \033[34m  {trackMessage} \033[0m')
 
 
@@ -88,46 +88,44 @@ def listReseed(withoutTrks=[]):
     if not qbClient:
         return False
 
-    count = 0
-    alltorrents = qbClient.torrents_info(sort='total_size')
-    i = 0
-    count = 0
-    while i < len(alltorrents):
-        reseedtor = alltorrents[i]
-        cursize = reseedtor.total_size
+    allTorrents = qbClient.torrents_info(sort='total_size')
+    torIndex = 0
+    matchCount = 0
+    while torIndex < len(allTorrents):
+        reseedtor = allTorrents[torIndex]
+        curSize = reseedtor.total_size
         reseedList = []
         curtor = reseedtor
-        while reseedtor.total_size == cursize:
-            trk = abbrevTracker(reseedtor.tracker)
-            if trk: reseedList.append(trk)
-            i += 1
-            if i  < len(alltorrents):
-                reseedtor = alltorrents[i]
+        while reseedtor.total_size == curSize:
+            trackname = abbrevTracker(reseedtor.tracker)
+            if trackname: 
+                reseedList.append(trackname)
+            torIndex += 1
+            if torIndex < len(allTorrents):
+                reseedtor = allTorrents[torIndex]
             else:
                 break
-        if not withoutTrks or (withoutTrks and [z for z in withoutTrks if z not in reseedList]):
-            count += 1
-            print(f'{count} -------------------')
+        if not withoutTrks or (withoutTrks and not [z for z in withoutTrks if z in reseedList]):
+            matchCount += 1
+            print(f'{matchCount} -------------------')
             printTorrent(curtor)
-            print(reseedList)
+            print("    " + reseedList)
 
-    print(f'Total: {i}')
+    print(f'Total torrents: {len(allTorrents)}')
 
 
 def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
-    parser.add_argument('--reseed-without', help='reseed without trackers')
+    parser.add_argument('--reseed-without', help='list torrents without trackers...')
     parser.add_argument('--reseed-list',
                         action='store_true',
-                        help='list reseed torrents.')
+                        help='list torrents of cross seeding.')
     parser.add_argument('--not-working',
                         action='store_true',
-                        help='list torrents not working.')
+                        help='list torrents of not working.')
     ARGS = parser.parse_args()
 
-
-# def getTrackers(argstr):
 
 def main():
     loadArgs()
