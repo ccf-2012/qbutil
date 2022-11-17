@@ -95,7 +95,6 @@ def listReseed(withoutTrks=[]):
     while i < len(alltorrents):
         reseedtor = alltorrents[i]
         cursize = reseedtor.total_size
-        count += 1
         reseedList = []
         curtor = reseedtor
         while reseedtor.total_size == cursize:
@@ -106,7 +105,8 @@ def listReseed(withoutTrks=[]):
                 reseedtor = alltorrents[i]
             else:
                 break
-        if withoutTrks or ([z for z in withoutTrks if z in reseedList]):
+        if not withoutTrks or (withoutTrks and [z for z in withoutTrks if z not in reseedList]):
+            count += 1
             print(f'{count} -------------------')
             printTorrent(curtor)
             print(reseedList)
