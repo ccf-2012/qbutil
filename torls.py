@@ -45,6 +45,14 @@ def addQbitWithTag(downlink, imdbtag):
     return True
 
 
+def qbDeleteTorrent(qbClient, tor_hash):
+    try:
+        qbClient.torrents_delete(True, torrent_hashes=tor_hash)
+    except Exception as ex:
+        print(
+            'There was an error during client.torrents_delete: %s', ex)
+
+
 def listQbNotWorking():
     qbClient = connQb()
     if not qbClient:
@@ -69,7 +77,7 @@ def listQbNotWorking():
 
 def printTorrent(torrent, trackMessage=''):
     print(
-        f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m' +
+        f'{torrent.hash[:6]}: \033[32m{torrent.name}\033[0m' +
         f' ({HumanBytes.format(torrent.total_size, True)})' +
         f' - \033[31m {abbrevTracker(torrent.tracker)}\033[0m' +
         f'    \033[34m  {trackMessage} \033[0m'
@@ -118,11 +126,40 @@ def listReseed(withoutTrks=[]):
     print(f'Total torrents: {len(allTorrents)}')
 
 
+def deleteReseed(matchHash):
+    qbClient = connQb()
+    if not qbClient:
+        return False
+
+    allTorrents = qbClient.torrents_info(sort='total_size')
+    torIndex = 0
+    matchCount = 0
+    while torIndex < len(allTorrents):
+        reseedtor = allTorrents[torIndex]
+        curSize = reseedtor.total_size
+        reseedList = []
+        while reseedtor.total_size == curSize:
+            reseedList.append(reseedtor)
+            torIndex += 1
+            if torIndex < len(allTorrents):
+                reseedtor = allTorrents[torIndex]
+            else:
+                break
+        if [z for z in reseedList if z.hash.startswith(matchHash)]:
+            for tor in reseedList:
+                printTorrent(tor)
+                # qbDeleteTorrent(hash)
+                matchCount += 1
+
+    print(f'Deleted torrents: {matchCount}')
+
+
 def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
-    parser.add_argument('--reseed-without', help='list torrents without trackers...')
-    parser.add_argument('--reseed-list',
+    parser.add_argument('--seed-without', help='list torrents without trackers...')
+    parser.add_argument('--delete', help='delete reseeding torrents of hash')
+    parser.add_argument('--seed-list',
                         action='store_true',
                         help='list torrents of cross seeding.')
     parser.add_argument('--not-working',
@@ -138,10 +175,12 @@ def main():
     CONFIG = ConfigData()
     CONFIG.readConfig('config.ini')
 
-    if ARGS.reseed_list:
+    if ARGS.seed_list:
         listReseed()
-    elif ARGS.reseed_without:
-        argTrks = ARGS.reseed_without.split(',')
+    elif ARGS.delete:
+        deleteReseed(ARGS.delete)
+    elif ARGS.seed_without:
+        argTrks = ARGS.seed_without.split(',')
         listReseed(withoutTrks=argTrks)
     elif ARGS.not_working:
         listQbNotWorking()
