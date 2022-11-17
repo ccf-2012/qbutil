@@ -68,8 +68,12 @@ def listQbNotWorking():
 
 
 def printTorrent(torrent, trackMessage=''):
-    print(f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({HumanBytes.format(torrent.total_size, True)})')
-    print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m    \033[34m  {trackMessage} \033[0m')
+    print(
+        f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m' +
+        f' ({HumanBytes.format(torrent.total_size, True)})' +
+        f' - \033[31m {abbrevTracker(torrent.tracker)}\033[0m' +
+        f'    \033[34m  {trackMessage} \033[0m'
+    )
 
 
 def abbrevTracker(trackerstr):
@@ -98,7 +102,7 @@ def listReseed(withoutTrks=[]):
         curtor = reseedtor
         while reseedtor.total_size == curSize:
             trackname = abbrevTracker(reseedtor.tracker)
-            if trackname: 
+            if trackname:
                 reseedList.append(trackname)
             torIndex += 1
             if torIndex < len(allTorrents):
@@ -109,7 +113,7 @@ def listReseed(withoutTrks=[]):
             matchCount += 1
             print(f'{matchCount} -------------------')
             printTorrent(curtor)
-            print("    " + reseedList)
+            print("    - " + str(reseedList))
 
     print(f'Total torrents: {len(allTorrents)}')
 
