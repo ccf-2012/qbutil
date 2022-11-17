@@ -59,12 +59,7 @@ def listQbNotWorking():
         # 列出tracker 未工作
         if tr3['status'] == 4:
             count += 1
-            print(
-                f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({HumanBytes.format(torrent.total_size, True)})'
-            )
-            print(
-                f'\033[31m {urllib.parse.urlparse(tr3["url"]).netloc}\033[0m   \033[34m  {tr3["msg"]} \033[0m'
-            )
+            printTorrent(torrent, tr3["msg"])
             torrent.addTags(['未工作'])
         else:
             torrent.removeTags(['未工作'])
@@ -72,11 +67,14 @@ def listQbNotWorking():
     print(f'Total: {count}')
 
 
-def printTorrent(torrent):
+def printTorrent(torrent, trackMessage=''):
     print(
-        f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({torrent.state})'
+        f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({HumanBytes.format(torrent.total_size, True)})'
     )
-    print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m ')
+    if trackMessage:
+        print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m    \033[34m  {trackMessage} \033[0m')
+    else:
+        print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m    \033[34m')
 
 
 def abbrevTracker(trackerstr):
