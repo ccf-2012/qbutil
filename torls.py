@@ -4,17 +4,21 @@ import urllib.parse
 from cfgdata import CONFIG
 
 
-def addQbitWithTag(downlink, imdbtag):
+def connQb():
     qbClient = qbittorrentapi.Client(host=CONFIG.qbServer,
                                      port=CONFIG.qbPort,
                                      username=CONFIG.qbUser,
                                      password=CONFIG.qbPass)
-
     try:
         qbClient.auth_log_in()
     except qbittorrentapi.LoginFailed as e:
         print(e)
 
+    return qbClient
+
+
+def addQbitWithTag(downlink, imdbtag):
+    qbClient = connQb()
     if not qbClient:
         return False
 
@@ -41,15 +45,7 @@ def addQbitWithTag(downlink, imdbtag):
 
 
 def listQbNotWorking():
-    qbClient = qbittorrentapi.Client(host=CONFIG.qbServer,
-                                     port=CONFIG.qbPort,
-                                     username=CONFIG.qbUser,
-                                     password=CONFIG.qbPass)
-    try:
-        qbClient.auth_log_in()
-    except qbittorrentapi.LoginFailed as e:
-        print(e)
-
+    qbClient = connQb()
     if not qbClient:
         return False
 
@@ -62,8 +58,12 @@ def listQbNotWorking():
         # 列出tracker 未工作
         if tr3['status'] == 4:
             count += 1
-            print( f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({torrent.state})' )
-            print( f'\033[31m {urllib.parse.urlparse(tr3["url"]).netloc}\033[0m   \033[34m  {tr3["msg"]} \033[0m' )
+            print(
+                f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({torrent.state})'
+            )
+            print(
+                f'\033[31m {urllib.parse.urlparse(tr3["url"]).netloc}\033[0m   \033[34m  {tr3["msg"]} \033[0m'
+            )
             torrent.addTags(['未工作'])
         else:
             torrent.removeTags(['未工作'])
@@ -72,8 +72,10 @@ def listQbNotWorking():
 
 
 def printTorrent(torrent):
-    print( f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({torrent.state})' )
-    print( f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m ' )
+    print(
+        f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({torrent.state})'
+    )
+    print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m ')
 
 
 def abbrevTracker(trackerstr):
@@ -87,32 +89,31 @@ def abbrevTracker(trackerstr):
     return abbrev
 
 
-def listReseed():
-    qbClient = qbittorrentapi.Client(host=CONFIG.qbServer,
-                                     port=CONFIG.qbPort,
-                                     username=CONFIG.qbUser,
-                                     password=CONFIG.qbPass)
-    try:
-        qbClient.auth_log_in()
-    except qbittorrentapi.LoginFailed as e:
-        print(e)
-
+def listReseed(without=''):
+    qbClient = connQb()
     if not qbClient:
         return False
 
     count = 0
     alltorrents = qbClient.torrents_info(sort='total_size')
-    cursize = alltorrents[0].total_size
-    reseedtor = alltorrents[0]
     i = 0
+    count = 0
     while i < len(alltorrents):
+        cursize = alltorrents[i].total_size
         reseedtor = alltorrents[i]
+        count += 1
+        reseedList = []
         while reseedtor and reseedtor.total_size == cursize:
-            printTorrent(reseedtor)
+            trk = abbrevTracker(reseedtor.tracker)
+            if trk: reseedList.append(trk)
             i += 1
+            if i >= len(alltorrents): break
             reseedtor = alltorrents[i]
-        print('-------------------')
-    print(f'Total: {count}')
+        if not without or (without and without not in reseedList):
+            print(f'{count} -------------------')
+            printTorrent(reseedtor)
+            print(reseedList)
+    print(f'Total: {i}')
 
 
 def loadArgs():
@@ -130,7 +131,7 @@ def loadArgs():
 def main():
     loadArgs()
     if ARGS.reseed_list:
-        listReseed()
+        listReseed('chdbits')
         pass
     elif ARGS.not_working:
         listQbNotWorking()
