@@ -1,7 +1,7 @@
 import configparser
 
 
-class configData():
+class ConfigData():
     interval = 3
     qbServer = ''
     qbPort = ''
@@ -24,8 +24,7 @@ class configData():
             self.dryrun = config['QBIT'].getboolean('dryrun', False)
 
 
-CONFIG = configData()
-CONFIG.readConfig('config.ini')
+
 
 
 

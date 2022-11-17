@@ -2,7 +2,7 @@ import argparse
 import qbittorrentapi
 import urllib.parse
 from humanbytes import HumanBytes
-from cfgdata import CONFIG
+from cfgdata import ConfigData
 
 
 def connQb():
@@ -129,6 +129,11 @@ def loadArgs():
 
 def main():
     loadArgs()
+
+    global CONFIG
+    CONFIG = ConfigData()
+    CONFIG.readConfig('config.ini')
+
     if ARGS.reseed_list:
         listReseed()
     elif ARGS.reseed_without:
