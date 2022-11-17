@@ -88,7 +88,7 @@ def abbrevTracker(trackerstr):
     return abbrev
 
 
-def listReseed(without=''):
+def listReseed(withoutTrk=''):
     qbClient = connQb()
     if not qbClient:
         return False
@@ -98,20 +98,24 @@ def listReseed(without=''):
     i = 0
     count = 0
     while i < len(alltorrents):
-        cursize = alltorrents[i].total_size
         reseedtor = alltorrents[i]
+        cursize = reseedtor.total_size
         count += 1
         reseedList = []
-        while reseedtor and reseedtor.total_size == cursize:
+        curtor = reseedtor
+        while reseedtor.total_size == cursize:
             trk = abbrevTracker(reseedtor.tracker)
             if trk: reseedList.append(trk)
             i += 1
-            if i >= len(alltorrents): break
-            reseedtor = alltorrents[i]
-        if not without or (without and without not in reseedList):
+            if i  < len(alltorrents):
+                reseedtor = alltorrents[i]
+            else:
+                break
+        if not withoutTrk or (withoutTrk and withoutTrk not in reseedList):
             print(f'{count} -------------------')
-            printTorrent(reseedtor)
+            printTorrent(curtor)
             print(reseedList)
+
     print(f'Total: {i}')
 
 
