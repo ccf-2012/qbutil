@@ -74,7 +74,7 @@ def printTorrent(torrent, trackMessage=''):
     if trackMessage:
         print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m    \033[34m  {trackMessage} \033[0m')
     else:
-        print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m    \033[34m')
+        print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m')
 
 
 def abbrevTracker(trackerstr):
