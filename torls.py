@@ -68,13 +68,8 @@ def listQbNotWorking():
 
 
 def printTorrent(torrent, trackMessage=''):
-    print(
-        f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({HumanBytes.format(torrent.total_size, True)})'
-    )
-    if trackMessage:
-        print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m    \033[34m  {trackMessage} \033[0m')
-    else:
-        print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m')
+    print( f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({HumanBytes.format(torrent.total_size, True)})' )
+    print(f'\033[31m {abbrevTracker(torrent.tracker)}\033[0m    \033[34m  {trackMessage} \033[0m')
 
 
 def abbrevTracker(trackerstr):
@@ -88,7 +83,7 @@ def abbrevTracker(trackerstr):
     return abbrev
 
 
-def listReseed(withoutTrk=''):
+def listReseed(withoutTrks=[]):
     qbClient = connQb()
     if not qbClient:
         return False
@@ -111,7 +106,7 @@ def listReseed(withoutTrk=''):
                 reseedtor = alltorrents[i]
             else:
                 break
-        if not withoutTrk or (withoutTrk and withoutTrk not in reseedList):
+        if withoutTrks or ([z for z in withoutTrks if z in reseedList]):
             print(f'{count} -------------------')
             printTorrent(curtor)
             print(reseedList)
@@ -122,6 +117,7 @@ def listReseed(withoutTrk=''):
 def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
+    parser.add_argument('--reseed-without', help='reseed without trackers')
     parser.add_argument('--reseed-list',
                         action='store_true',
                         help='list reseed torrents.')
@@ -131,11 +127,15 @@ def loadArgs():
     ARGS = parser.parse_args()
 
 
+# def getTrackers(argstr):
+
 def main():
     loadArgs()
     if ARGS.reseed_list:
-        listReseed('chdbits')
-        pass
+        listReseed()
+    elif ARGS.reseed_without:
+        argTrks = ARGS.reseed_without.split(',')
+        listReseed(withoutTrks=argTrks)
     elif ARGS.not_working:
         listQbNotWorking()
 
