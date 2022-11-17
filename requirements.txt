@@ -1,0 +1,2 @@
+torcp
+qbittorrent-api
