@@ -85,10 +85,10 @@ def printTorrent(torrent, trackMessage=''):
 
 
 def torSameSize(sizeA, sizeB):
-    if sizeA < 500000000:
-        return (abs(sizeA-sizeB) < 50)
-    else:
+    if sizeA < 5000000000:
         return (abs(sizeA-sizeB) < 500)
+    else:
+        return (abs(sizeA-sizeB) < 2000000)
 
 
 def abbrevTracker(trackerstr):
@@ -115,8 +115,6 @@ def listCrossedTorrents(withoutTrks=[]):
         curSize = reseedtor.total_size
         reseedList = []
         curtor = reseedtor
-        if reseedtor.name.startswith('Naked Lunch'):
-            breakpoint()
         while torSameSize(reseedtor.total_size, curSize):
             trackname = abbrevTracker(reseedtor.tracker)
             if trackname:
