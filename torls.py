@@ -85,10 +85,14 @@ def printTorrent(torrent, trackMessage=''):
 
 
 def torSameSize(sizeA, sizeB):
-    if sizeA < 5000000000:
-        return (abs(sizeA-sizeB) < 500)
+    if sizeA < 50000000:
+        return sizeA == sizeB
+    elif sizeA < 1000000000:
+        return (abs(sizeA-sizeB) < 2000)
+    elif sizeA < 30000000000:
+        return (abs(sizeA-sizeB) < 10000)
     else:
-        return (abs(sizeA-sizeB) < 20000)
+        return (abs(sizeA-sizeB) < 2000000)
 
 
 def abbrevTracker(trackerstr):
