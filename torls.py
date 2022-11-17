@@ -1,6 +1,7 @@
 import argparse
 import qbittorrentapi
 import urllib.parse
+from humanbytes import HumanBytes
 from cfgdata import CONFIG
 
 
@@ -59,7 +60,7 @@ def listQbNotWorking():
         if tr3['status'] == 4:
             count += 1
             print(
-                f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({torrent.state})'
+                f'{torrent.hash[-6:]}: \033[32m{torrent.name}\033[0m ({HumanBytes.format(torrent.total_size, True)})'
             )
             print(
                 f'\033[31m {urllib.parse.urlparse(tr3["url"]).netloc}\033[0m   \033[34m  {tr3["msg"]} \033[0m'
