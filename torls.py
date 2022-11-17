@@ -18,7 +18,7 @@ def connQb():
     return qbClient
 
 
-def addQbitWithTag(downlink, imdbtag):
+def qbAddWithTag(downlink, imdbtag):
     qbClient = connQb()
     if not qbClient:
         return False
@@ -95,7 +95,7 @@ def abbrevTracker(trackerstr):
     return abbrev
 
 
-def listReseed(withoutTrks=[]):
+def listCrossedTorrents(withoutTrks=[]):
     qbClient = connQb()
     if not qbClient:
         return False
@@ -126,7 +126,7 @@ def listReseed(withoutTrks=[]):
     print(f'Total torrents: {len(allTorrents)}')
 
 
-def deleteReseed(matchHash):
+def deleteCrossedTorrents(matchHash):
     qbClient = connQb()
     if not qbClient:
         return False
@@ -148,7 +148,7 @@ def deleteReseed(matchHash):
         if [z for z in reseedList if z.hash.startswith(matchHash)]:
             for tor in reseedList:
                 printTorrent(tor)
-                # qbDeleteTorrent(hash)
+                qbDeleteTorrent(tor.hash)
                 matchCount += 1
 
     print(f'Deleted torrents: {matchCount}')
@@ -176,12 +176,12 @@ def main():
     CONFIG.readConfig('config.ini')
 
     if ARGS.seed_list:
-        listReseed()
-    elif ARGS.delete:
-        deleteReseed(ARGS.delete)
+        listCrossedTorrents()
     elif ARGS.seed_without:
         argTrks = ARGS.seed_without.split(',')
-        listReseed(withoutTrks=argTrks)
+        listCrossedTorrents(withoutTrks=argTrks)
+    elif ARGS.delete:
+        deleteCrossedTorrents(ARGS.delete)
     elif ARGS.not_working:
         listQbNotWorking()
 
