@@ -84,6 +84,13 @@ def printTorrent(torrent, trackMessage=''):
     )
 
 
+def torSameSize(sizeA, sizeB):
+    if sizeA < 500000000:
+        return (abs(sizeA-sizeB) < 50)
+    else:
+        return (abs(sizeA-sizeB) < 500)
+
+
 def abbrevTracker(trackerstr):
     hostnameList = urllib.parse.urlparse(trackerstr).netloc.split('.')
     if len(hostnameList) == 2:
@@ -108,7 +115,9 @@ def listCrossedTorrents(withoutTrks=[]):
         curSize = reseedtor.total_size
         reseedList = []
         curtor = reseedtor
-        while reseedtor.total_size == curSize:
+        if reseedtor.name.startswith('Naked Lunch'):
+            breakpoint()
+        while torSameSize(reseedtor.total_size, curSize):
             trackname = abbrevTracker(reseedtor.tracker)
             if trackname:
                 reseedList.append(trackname)
@@ -138,7 +147,7 @@ def deleteCrossedTorrents(matchHash):
         reseedtor = allTorrents[torIndex]
         curSize = reseedtor.total_size
         reseedList = []
-        while reseedtor.total_size == curSize:
+        while torSameSize(reseedtor.total_size, curSize):
             reseedList.append(reseedtor)
             torIndex += 1
             if torIndex < len(allTorrents):
