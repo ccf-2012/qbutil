@@ -148,7 +148,7 @@ def deleteCrossedTorrents(matchHash):
         if [z for z in reseedList if z.hash.startswith(matchHash)]:
             for tor in reseedList:
                 printTorrent(tor)
-                qbDeleteTorrent(tor.hash)
+                qbDeleteTorrent(qbClient, tor.hash)
                 matchCount += 1
 
     print(f'Deleted torrents: {matchCount}')
