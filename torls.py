@@ -127,6 +127,9 @@ def listCrossedTorrents(withoutTrks=[], sizeGt=0):
 
     iterList = iter(allTorrents)
     tor = next(iterList, None)
+    while tor and tor.total_size < sizeGt:
+        tor = next(iterList, None)
+        
     while tor:
         reseedList = []
         groupSize = tor.total_size
