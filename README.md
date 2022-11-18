@@ -1,22 +1,20 @@
 # torls 
-qbittorrent utility to list torrents with reseeding.
+qbit工具，用于查看辅种情况，以及删除种子时删除所有辅种
 
-purpose of this script, in Chinese:
-* `--list-without` 看看哪些种子还没辅在 mmtbits 站
+主要功能
+* `--list-without` 看看哪些种子还没辅(或发)在 mmtbits 站
 * `--delete` 删除一个种子和它的所有辅种
 * `--not-working` 看看哪些种子 `未工作`，并在qbit中打上标签
 
 
-## Install 
+## 安装  
 ```sh
 git clone https://github.com/ccf-2012/qbutil.git
 cd qbutil
 pip install -r requirements.txt
 ```
 
-## Write a config.ini
-
-* 填写 `config.ini` 信息
+##  填写 `config.ini` 信息
 ```sh 
 cp config-sample.ini config.ini
 vi config.ini
@@ -31,7 +29,7 @@ user=MyQbitUsername
 pass=MyQbitPassword
 ```
 
-## Usage
+## 使用
 ```
 python torls.py -h
 
@@ -52,7 +50,7 @@ options:
   --not-working         list torrents of not working.
 ```
 
-## Example
+## 例子
 ```sh
 # 列出所有作种的组
 python3 torls.py --list
