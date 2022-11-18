@@ -106,7 +106,7 @@ def abbrevTracker(trackerstr):
     return abbrev
 
 
-def listCrossedTorrents(withoutTrks=[]):
+def listCrossedTorrents(withoutTrks=[], sizeGt=0):
     qbClient = connQb()
     if not qbClient:
         return False
@@ -116,6 +116,8 @@ def listCrossedTorrents(withoutTrks=[]):
     matchCount = 0
     while torIndex < len(allTorrents):
         reseedtor = allTorrents[torIndex]
+        if reseedtor.total_size < sizeGt:
+            continue
         curSize = reseedtor.total_size
         reseedList = []
         curtor = reseedtor
@@ -169,6 +171,7 @@ def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
     parser.add_argument('--seed-without', help='list torrents without trackers...')
+    parser.add_argument('--size-gt', help='list torrents with size greater than...')
     parser.add_argument('--delete', help='delete reseeding torrents of hash')
     parser.add_argument('--seed-list',
                         action='store_true',
@@ -190,7 +193,7 @@ def main():
         listCrossedTorrents()
     elif ARGS.seed_without:
         argTrks = ARGS.seed_without.split(',')
-        listCrossedTorrents(withoutTrks=argTrks)
+        listCrossedTorrents(withoutTrks=argTrks, sizeGt=ARGS.size_gt)
     elif ARGS.delete:
         deleteCrossedTorrents(ARGS.delete)
     elif ARGS.not_working:
