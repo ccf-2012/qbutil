@@ -49,8 +49,7 @@ def qbDeleteTorrent(qbClient, tor_hash):
     try:
         qbClient.torrents_delete(True, torrent_hashes=tor_hash)
     except Exception as ex:
-        print(
-            'There was an error during client.torrents_delete: %s', ex)
+        print('There was an error during client.torrents_delete: %s', ex)
 
 
 def listQbNotWorking():
@@ -76,23 +75,21 @@ def listQbNotWorking():
 
 
 def printTorrent(torrent, trackMessage=''):
-    print(
-        f'{torrent.hash[:6]}: \033[32m{torrent.name}\033[0m' +
-        f' ({HumanBytes.format(torrent.total_size, True)})' +
-        f' - \033[31m {abbrevTracker(torrent.tracker)}\033[0m' +
-        f'    \033[34m  {trackMessage} \033[0m'
-    )
+    print(f'{torrent.hash[:6]}: \033[32m{torrent.name}\033[0m' +
+          f' ({HumanBytes.format(torrent.total_size, True)})' +
+          f' - \033[31m {abbrevTracker(torrent.tracker)}\033[0m' +
+          f'    \033[34m  {trackMessage} \033[0m')
 
 
 def torSameSize(sizeA, sizeB):
     if sizeA < 50000000:
         return sizeA == sizeB
     elif sizeA < 1000000000:
-        return (abs(sizeA-sizeB) < 2000)
+        return (abs(sizeA - sizeB) < 2000)
     elif sizeA < 50000000000:
-        return (abs(sizeA-sizeB) < 10000)
+        return (abs(sizeA - sizeB) < 10000)
     else:
-        return (abs(sizeA-sizeB) < 2000000)
+        return (abs(sizeA - sizeB) < 2000000)
 
 
 def abbrevTracker(trackerstr):
@@ -112,31 +109,36 @@ def listCrossedTorrents(withoutTrks=[], sizeGt=0):
         return False
 
     allTorrents = qbClient.torrents_info(sort='total_size')
-    torIndex = 0
     matchCount = 0
-    while torIndex < len(allTorrents):
-        reseedtor = allTorrents[torIndex]
-        if reseedtor.total_size < sizeGt:
-            torIndex += 1
-            if torIndex < len(allTorrents):
-                reseedtor = allTorrents[torIndex]
-            continue
-        curSize = reseedtor.total_size
+    # torIndex = 0
+    # while torIndex < len(allTorrents):
+    #     reseedtor = allTorrents[torIndex]
+    #     if reseedtor.total_size < sizeGt:
+    #         torIndex += 1
+    #         continue
+
+    #     curSize = reseedtor.total_size
+    #     reseedList = []
+    #     curtor = reseedtor
+    #     while (torIndex < len(allTorrents)) and torSameSize(reseedtor.total_size, curSize):
+    #         reseedList.append(abbrevTracker(reseedtor.tracker))
+    #         torIndex += 1
+    #         reseedtor = allTorrents[torIndex] if torIndex < len(allTorrents) else reseedtor
+
+    iterList = iter(allTorrents)
+    tor = next(iterList, None)
+    while tor:
         reseedList = []
-        curtor = reseedtor
-        while torSameSize(reseedtor.total_size, curSize):
-            trackname = abbrevTracker(reseedtor.tracker)
-            if trackname:
-                reseedList.append(trackname)
-            torIndex += 1
-            if torIndex < len(allTorrents):
-                reseedtor = allTorrents[torIndex]
-            else:
-                break
+        groupSize = tor.total_size
+        groupTor = tor
+        while tor and torSameSize(tor.total_size, groupSize):
+            reseedList.append(abbrevTracker(tor.tracker))
+            tor = next(iterList, None)
+
         if not withoutTrks or (withoutTrks and not [z for z in withoutTrks if z in reseedList]):
             matchCount += 1
             print(f'{matchCount} -------------------')
-            printTorrent(curtor)
+            printTorrent(groupTor)
             print("    - " + str(reseedList))
 
     print(f'Total torrents: {len(allTorrents)}')
@@ -173,8 +175,11 @@ def deleteCrossedTorrents(matchHash):
 def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
-    parser.add_argument('--seed-without', help='list torrents without trackers...')
-    parser.add_argument('--size-gt', type=int, help='list torrents with size greater than...')
+    parser.add_argument('--seed-without',
+                        help='list torrents without trackers...')
+    parser.add_argument('--size-gt',
+                        type=int,
+                        help='list torrents with size greater than...')
     parser.add_argument('--delete', help='delete reseeding torrents of hash')
     parser.add_argument('--seed-list',
                         action='store_true',

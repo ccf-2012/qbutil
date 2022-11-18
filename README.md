@@ -35,17 +35,32 @@ pass=MyQbitPassword
 ```
 python torls.py -h
 
-usage: torls.py [-h] [--seed-without SEED_WITHOUT] [--delete DELETE]
-                [--seed-list] [--not-working]
+usage: torls.py [-h] [--seed-without SEED_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--seed-list] [--not-working]
 
 a qbittorrent utils
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --seed-without SEED_WITHOUT
                         list torrents without trackers...
+  --size-gt SIZE_GT     list torrents with size greater than...
   --delete DELETE       delete reseeding torrents of hash
   --seed-list           list torrents of cross seeding.
   --not-working         list torrents of not working.
 ```
 
+## Example
+```sh
+# 列出所有作种的组
+python3 torls.py --seed-list
+
+# 列出没有在trackbits 辅种的种子
+python3 torls.py --seed-without trackbits
+
+# 列出大于 20G， 且没有在trackbits,mmtbits 辅种
+python3 torls.py --seed-without trackbits,mmtbits  --size-gt 20
+
+# 删除hash为 156c96 开头的种子和所有辅种
+python3 torls.py --delete  156c96
+
+```
