@@ -180,7 +180,8 @@ def loadArgs():
                         action='store_true',
                         help='list torrents of not working.')
     ARGS = parser.parse_args()
-
+    if not ARGS.size_gt:
+        ARGS.size_gt = 0
 
 def main():
     loadArgs()
