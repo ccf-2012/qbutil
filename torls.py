@@ -201,16 +201,16 @@ def deleteCrossedTorrents(matchHash):
 def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
-    parser.add_argument('--seed-without',
+    parser.add_argument('--list',
+                        action='store_true',
+                        help='list torrents of cross seeding.')
+    parser.add_argument('--list-without',
                         help='list torrents without trackers...')
     parser.add_argument('--size-gt',
                         type=int,
                         help='list torrents with size greater than...')
     parser.add_argument('--delete', help='delete reseeding torrents of hash')
     parser.add_argument('--name-not-regex', help='regex to not match the tor name.')
-    parser.add_argument('--seed-list',
-                        action='store_true',
-                        help='list torrents of cross seeding.')
     parser.add_argument('--not-working',
                         action='store_true',
                         help='list torrents of not working.')
@@ -228,10 +228,10 @@ def main():
     CONFIG = ConfigData()
     CONFIG.readConfig('config.ini')
 
-    if ARGS.seed_list:
+    if ARGS.list:
         listCrossedTorrents(sizeGt=ARGS.size_gt)
-    elif ARGS.seed_without:
-        argTrks = ARGS.seed_without.split(',')
+    elif ARGS.list_without:
+        argTrks = ARGS.list_without.split(',')
         listCrossedTorrents(withoutTrks=argTrks, sizeGt=ARGS.size_gt)
     elif ARGS.delete:
         deleteCrossedTorrents(ARGS.delete)

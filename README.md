@@ -2,7 +2,7 @@
 qbittorrent utility to list torrents with reseeding.
 
 purpose of this script, in Chinese:
-* `--seed-without` 看看哪些种子还没 发/辅 在 mmtbits 站上
+* `--list-without` 看看哪些种子还没辅在 mmtbits 站
 * `--delete` 删除一个种子和它的所有辅种
 * `--not-working` 看看哪些种子 `未工作`，并在qbit中打上标签
 
@@ -35,36 +35,36 @@ pass=MyQbitPassword
 ```
 python torls.py -h
 
-usage: torls.py [-h] [--seed-without SEED_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX] [--seed-list]
+usage: torls.py [-h] [--list] [--list-without LIST_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX]
                 [--not-working]
 
 a qbittorrent utils
 
 options:
   -h, --help            show this help message and exit
-  --seed-without SEED_WITHOUT
+  --list                list torrents of cross seeding.
+  --list-without LIST_WITHOUT
                         list torrents without trackers...
   --size-gt SIZE_GT     list torrents with size greater than...
   --delete DELETE       delete reseeding torrents of hash
   --name-not-regex NAME_NOT_REGEX
                         regex to not match the tor name.
-  --seed-list           list torrents of cross seeding.
   --not-working         list torrents of not working.
 ```
 
 ## Example
 ```sh
 # 列出所有作种的组
-python3 torls.py --seed-list
+python3 torls.py --list
 
 # 列出没有在trackbits 辅种的种子
-python3 torls.py --seed-without trackbits
+python3 torls.py --list-without trackbits
 
 # 列出大于 20G， 且没有在trackbits,mmtbits 辅种
-python3 torls.py --seed-without trackbits,mmtbits  --size-gt 20
+python3 torls.py --list-without trackbits,mmtbits  --size-gt 20
 
 # 列出大于 20G， 且没有在trackbits,mmtbits 辅种, 且种子名中不包含 cfandora的
-python3 torls.py --seed-without trackbits,mmtbits  --size-gt 20 --name-not-regex cfandora
+python3 torls.py --list-without trackbits,mmtbits  --size-gt 20 --name-not-regex cfandora
 
 # 删除hash为 156c96 开头的种子和所有辅种
 python3 torls.py --delete  156c96
