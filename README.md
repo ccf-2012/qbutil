@@ -35,7 +35,8 @@ pass=MyQbitPassword
 ```
 python torls.py -h
 
-usage: torls.py [-h] [--seed-without SEED_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--seed-list] [--not-working]
+usage: torls.py [-h] [--seed-without SEED_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX] [--seed-list]
+                [--not-working]
 
 a qbittorrent utils
 
@@ -45,6 +46,8 @@ options:
                         list torrents without trackers...
   --size-gt SIZE_GT     list torrents with size greater than...
   --delete DELETE       delete reseeding torrents of hash
+  --name-not-regex NAME_NOT_REGEX
+                        regex to not match the tor name.
   --seed-list           list torrents of cross seeding.
   --not-working         list torrents of not working.
 ```
@@ -59,6 +62,9 @@ python3 torls.py --seed-without trackbits
 
 # 列出大于 20G， 且没有在trackbits,mmtbits 辅种
 python3 torls.py --seed-without trackbits,mmtbits  --size-gt 20
+
+# 列出大于 20G， 且没有在trackbits,mmtbits 辅种, 且种子名中不包含 cfandora的
+python3 torls.py --seed-without trackbits,mmtbits  --size-gt 20 --name-not-regex cfandora
 
 # 删除hash为 156c96 开头的种子和所有辅种
 python3 torls.py --delete  156c96
