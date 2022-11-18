@@ -3,6 +3,7 @@ import qbittorrentapi
 import urllib.parse
 from humanbytes import HumanBytes
 from cfgdata import ConfigData
+import re
 
 
 def connQb():
@@ -103,6 +104,15 @@ def abbrevTracker(trackerstr):
     return abbrev
 
 
+def matchTitleNotRegex(torname):
+    if ARGS.name_not_regex:
+        m0 = re.search(ARGS.name_not_regex, torname, flags=re.A)
+        if m0:
+            # print('Info regex not match.')
+            return True
+    return False
+
+
 def listCrossedTorrents(withoutTrks=[], sizeGt=0):
     qbClient = connQb()
     if not qbClient:
@@ -131,6 +141,10 @@ def listCrossedTorrents(withoutTrks=[], sizeGt=0):
         tor = next(iterList, None)
 
     while tor:
+        if matchTitleNotRegex(tor.name):
+            tor = next(iterList, None)
+            continue
+
         reseedList = []
         groupSize = tor.total_size
         groupTor = tor
@@ -193,6 +207,7 @@ def loadArgs():
                         type=int,
                         help='list torrents with size greater than...')
     parser.add_argument('--delete', help='delete reseeding torrents of hash')
+    parser.add_argument('--name-not-regex', help='regex to not match the tor name.')
     parser.add_argument('--seed-list',
                         action='store_true',
                         help='list torrents of cross seeding.')
@@ -214,7 +229,7 @@ def main():
     CONFIG.readConfig('config.ini')
 
     if ARGS.seed_list:
-        listCrossedTorrents()
+        listCrossedTorrents(sizeGt=ARGS.size_gt)
     elif ARGS.seed_without:
         argTrks = ARGS.seed_without.split(',')
         listCrossedTorrents(withoutTrks=argTrks, sizeGt=ARGS.size_gt)
