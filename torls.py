@@ -171,7 +171,7 @@ def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
     parser.add_argument('--seed-without', help='list torrents without trackers...')
-    parser.add_argument('--size-gt', help='list torrents with size greater than...')
+    parser.add_argument('--size-gt', type=int, help='list torrents with size greater than...')
     parser.add_argument('--delete', help='delete reseeding torrents of hash')
     parser.add_argument('--seed-list',
                         action='store_true',
@@ -184,6 +184,7 @@ def loadArgs():
         ARGS.size_gt = 0
     else:
         ARGS.size_gt = ARGS.size_gt * 1024 * 1024 * 1024
+
 
 def main():
     loadArgs()
