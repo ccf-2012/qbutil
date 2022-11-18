@@ -129,7 +129,7 @@ def listCrossedTorrents(withoutTrks=[], sizeGt=0):
     tor = next(iterList, None)
     while tor and tor.total_size < sizeGt:
         tor = next(iterList, None)
-        
+
     while tor:
         reseedList = []
         groupSize = tor.total_size
@@ -153,21 +153,30 @@ def deleteCrossedTorrents(matchHash):
         return False
 
     allTorrents = qbClient.torrents_info(sort='total_size')
-    torIndex = 0
     matchCount = 0
-    while torIndex < len(allTorrents):
-        reseedtor = allTorrents[torIndex]
-        curSize = reseedtor.total_size
-        reseedList = []
-        while torSameSize(reseedtor.total_size, curSize):
-            reseedList.append(reseedtor)
-            torIndex += 1
-            if torIndex < len(allTorrents):
-                reseedtor = allTorrents[torIndex]
-            else:
-                break
-        if [z for z in reseedList if z.hash.startswith(matchHash)]:
-            for tor in reseedList:
+    # torIndex = 0
+    # while torIndex < len(allTorrents):
+    #     reseedtor = allTorrents[torIndex]
+    #     curSize = reseedtor.total_size
+    #     reseedList = []
+    #     while torSameSize(reseedtor.total_size, curSize):
+    #         reseedList.append(reseedtor)
+    #         torIndex += 1
+    #         if torIndex < len(allTorrents):
+    #             reseedtor = allTorrents[torIndex]
+    #         else:
+    #             break
+    iterList = iter(allTorrents)
+    tor = next(iterList, None)
+    while tor:
+        groupTorList = []
+        groupSize = tor.total_size
+        while tor and torSameSize(tor.total_size, groupSize):
+            groupTorList.append(tor)
+            tor = next(iterList, None)
+
+        if [z for z in groupTorList if z.hash.startswith(matchHash)]:
+            for tor in groupTorList:
                 printTorrent(tor)
                 qbDeleteTorrent(qbClient, tor.hash)
                 matchCount += 1
