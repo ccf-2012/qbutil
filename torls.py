@@ -117,6 +117,9 @@ def listCrossedTorrents(withoutTrks=[], sizeGt=0):
     while torIndex < len(allTorrents):
         reseedtor = allTorrents[torIndex]
         if reseedtor.total_size < sizeGt:
+            torIndex += 1
+            if torIndex < len(allTorrents):
+                reseedtor = allTorrents[torIndex]
             continue
         curSize = reseedtor.total_size
         reseedList = []
