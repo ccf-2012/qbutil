@@ -182,6 +182,8 @@ def loadArgs():
     ARGS = parser.parse_args()
     if not ARGS.size_gt:
         ARGS.size_gt = 0
+    else:
+        ARGS.size_gt = ARGS.size_gt * 1024 * 1024 * 1024
 
 def main():
     loadArgs()
