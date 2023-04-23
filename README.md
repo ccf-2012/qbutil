@@ -33,12 +33,11 @@ pass=MyQbitPassword
 ```
 python torls.py -h
 
-usage: torls.py [-h] [--list] [--list-without LIST_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX]
-                [--not-working]
+usage: torls.py [-h] [--list] [--list-without LIST_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX] [--not-working] [--tag-tracker]
 
 a qbittorrent utils
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   --list                list torrents of cross seeding.
   --list-without LIST_WITHOUT
@@ -48,6 +47,7 @@ options:
   --name-not-regex NAME_NOT_REGEX
                         regex to not match the tor name.
   --not-working         list torrents of not working.
+  --tag-tracker         tag torrents tracker.
 ```
 
 ## 例子

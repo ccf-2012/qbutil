@@ -75,6 +75,29 @@ def listQbNotWorking():
     print(f'Total not working: {countNotWorking}')
 
 
+def tagTracker():
+    qbClient = connQb()
+    if not qbClient:
+        return False
+
+    countNotWorking = 0
+    for torrent in qbClient.torrents_info(sort='name'):
+        # breakpoint()
+        # 这里偷懒了，多tracker情况这里就不对了，用者自行想办法了
+        tr3 = torrent.trackers[3]
+
+        # 列出tracker 未工作
+        if tr3['status'] == 4:
+            countNotWorking += 1
+            printTorrent(torrent, tr3["msg"])
+            torrent.addTags(['未工作'])
+        else:
+            torrent.removeTags(['未工作'])
+            printTorrent(torrent, tr3["msg"])
+            torrent.addTags([abbrevTracker(torrent.tracker)])
+    print(f'Total not working: {countNotWorking}')
+
+
 def printTorrent(torrent, trackMessage=''):
     print(f'{torrent.hash[:6]}: \033[32m{torrent.name}\033[0m' +
           f' ({HumanBytes.format(torrent.total_size, True)})' +
@@ -214,6 +237,9 @@ def loadArgs():
     parser.add_argument('--not-working',
                         action='store_true',
                         help='list torrents of not working.')
+    parser.add_argument('--tag-tracker',
+                        action='store_true',
+                        help='tag torrents tracker.')
     ARGS = parser.parse_args()
     if not ARGS.size_gt:
         ARGS.size_gt = 0
