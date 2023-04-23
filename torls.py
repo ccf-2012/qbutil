@@ -263,6 +263,8 @@ def main():
         deleteCrossedTorrents(ARGS.delete)
     elif ARGS.not_working:
         listQbNotWorking()
+    elif ARGS.tag_tracker:
+        tagTracker()
 
 
 if __name__ == '__main__':
