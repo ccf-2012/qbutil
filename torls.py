@@ -92,7 +92,7 @@ def tagTracker():
             printTorrent(torrent, tr3["msg"])
             torrent.addTags(['未工作'])
         else:
-            torrent.removeTags(['未工作'])
+            torrent.removeTags()
             printTorrent(torrent, tr3["msg"])
             torrent.addTags([abbrevTracker(torrent.tracker)])
     print(f'Total not working: {countNotWorking}')
