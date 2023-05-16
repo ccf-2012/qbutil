@@ -33,12 +33,15 @@ pass=MyQbitPassword
 ```
 python torls.py -h
 
-usage: torls.py [-h] [--list] [--list-without LIST_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX] [--not-working] [--tag-tracker]
+usage: torls.py [-h] [-C CONFIG] [--list] [--list-without LIST_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX] [--not-working]
+                [--tag-tracker]
 
 a qbittorrent utils
 
 optional arguments:
   -h, --help            show this help message and exit
+  -C CONFIG, --config CONFIG
+                        config file.
   --list                list torrents of cross seeding.
   --list-without LIST_WITHOUT
                         list torrents without trackers...
@@ -66,5 +69,8 @@ python3 torls.py --list-without trackbits,mmtbits  --size-gt 20 --name-not-regex
 
 # 删除hash为 156c96 开头的种子和所有辅种
 python3 torls.py --delete  156c96
+
+# 给qb中种子加 站点 和 未工作 标签
+python3 torls.py --tag-tracker
 
 ```

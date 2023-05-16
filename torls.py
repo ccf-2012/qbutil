@@ -3,6 +3,7 @@ import qbittorrentapi
 import urllib.parse
 from humanbytes import HumanBytes
 from cfgdata import ConfigData
+import os
 import re
 
 
@@ -143,21 +144,6 @@ def listCrossedTorrents(withoutTrks=[], sizeGt=0):
 
     allTorrents = qbClient.torrents_info(sort='total_size')
     matchCount = 0
-    # torIndex = 0
-    # while torIndex < len(allTorrents):
-    #     reseedtor = allTorrents[torIndex]
-    #     if reseedtor.total_size < sizeGt:
-    #         torIndex += 1
-    #         continue
-
-    #     curSize = reseedtor.total_size
-    #     reseedList = []
-    #     curtor = reseedtor
-    #     while (torIndex < len(allTorrents)) and torSameSize(reseedtor.total_size, curSize):
-    #         reseedList.append(abbrevTracker(reseedtor.tracker))
-    #         torIndex += 1
-    #         reseedtor = allTorrents[torIndex] if torIndex < len(allTorrents) else reseedtor
-
     iterList = iter(allTorrents)
     tor = next(iterList, None)
     while tor and tor.total_size < sizeGt:
@@ -191,18 +177,7 @@ def deleteCrossedTorrents(matchHash):
 
     allTorrents = qbClient.torrents_info(sort='total_size')
     matchCount = 0
-    # torIndex = 0
-    # while torIndex < len(allTorrents):
-    #     reseedtor = allTorrents[torIndex]
-    #     curSize = reseedtor.total_size
-    #     reseedList = []
-    #     while torSameSize(reseedtor.total_size, curSize):
-    #         reseedList.append(reseedtor)
-    #         torIndex += 1
-    #         if torIndex < len(allTorrents):
-    #             reseedtor = allTorrents[torIndex]
-    #         else:
-    #             break
+
     iterList = iter(allTorrents)
     tor = next(iterList, None)
     while tor:
@@ -224,6 +199,7 @@ def deleteCrossedTorrents(matchHash):
 def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
+    parser.add_argument('-C', '--config', help='config file.')
     parser.add_argument('--list',
                         action='store_true',
                         help='list torrents of cross seeding.')
@@ -245,6 +221,8 @@ def loadArgs():
         ARGS.size_gt = 0
     else:
         ARGS.size_gt = ARGS.size_gt * 1024 * 1024 * 1024
+    if not ARGS.config:
+        ARGS.config = os.path.join(os.path.dirname(__file__), 'config.ini')
 
 
 def main():
@@ -252,7 +230,7 @@ def main():
 
     global CONFIG
     CONFIG = ConfigData()
-    CONFIG.readConfig('config.ini')
+    CONFIG.readConfig(ARGS.config)
 
     if ARGS.list:
         listCrossedTorrents(sizeGt=ARGS.size_gt)
