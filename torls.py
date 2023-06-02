@@ -136,6 +136,17 @@ def matchTitleNotRegex(torname):
             return True
     return False
 
+def editTorrentsTracker(trackerAbrev, newTrackerUrl):
+    qbClient = connQb()
+    if not qbClient:
+        return False
+    allTorrents = qbClient.torrents_info(sort='total_size')
+    print(f'Total torrents: {len(allTorrents)}')
+    for tor in allTorrents:
+        if abbrevTracker(tor.tracker) == trackerAbrev:
+            printTorrent(tor)
+            tr3 = tor.trackers[3]
+            tor.edit_tracker(tr3['url'], newTrackerUrl)
 
 def listCrossedTorrents(withoutTrks=[], sizeGt=0):
     qbClient = connQb()
@@ -216,6 +227,10 @@ def loadArgs():
     parser.add_argument('--tag-tracker',
                         action='store_true',
                         help='tag torrents tracker.')
+    parser.add_argument('--site',
+                        help='the pt site to edit.')
+    parser.add_argument('--edit-tracker',
+                        help='edit tracker.')
     ARGS = parser.parse_args()
     if not ARGS.size_gt:
         ARGS.size_gt = 0
@@ -243,6 +258,9 @@ def main():
         listQbNotWorking()
     elif ARGS.tag_tracker:
         tagTracker()
+    elif ARGS.edit_tracker:
+        siteAbrev = ARGS.site
+        editTorrentsTracker(trackerAbrev=siteAbrev, newTrackerUrl=ARGS.edit_tracker)
 
 
 if __name__ == '__main__':

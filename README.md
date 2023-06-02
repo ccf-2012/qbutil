@@ -5,6 +5,8 @@ qbit工具，用于查看辅种情况，以及删除种子时删除所有辅种
 * `--list-without` 看看哪些种子还没辅(或发)在 mmtbits 站
 * `--delete` 删除一个种子和它的所有辅种
 * `--not-working` 看看哪些种子 `未工作`，并在qbit中打上标签
+* `--tag-tracker` 对种子按tracker打上标签，其中 `未工作` 也会单独标签
+* `--edit-tracker` 修改 tracker
 
 
 ## 安装  
@@ -33,8 +35,8 @@ pass=MyQbitPassword
 ```
 python torls.py -h
 
-usage: torls.py [-h] [-C CONFIG] [--list] [--list-without LIST_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX] [--not-working]
-                [--tag-tracker]
+usage: torls.py [-h] [-C CONFIG] [--list] [--list-without LIST_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX] [--not-working] [--tag-tracker]
+                [--site SITE] [--edit-tracker EDIT_TRACKER]
 
 a qbittorrent utils
 
@@ -51,6 +53,9 @@ optional arguments:
                         regex to not match the tor name.
   --not-working         list torrents of not working.
   --tag-tracker         tag torrents tracker.
+  --site SITE           the pt site to edit.
+  --edit-tracker EDIT_TRACKER
+                        edit tracker.
 ```
 
 ## 例子
@@ -72,5 +77,8 @@ python3 torls.py --delete  156c96
 
 # 给qb中种子加 站点 和 未工作 标签
 python3 torls.py --tag-tracker
+
+# 修改一个站的tracker
+python3 torls.py --site piggo --edit-tracker 'https://tracker.piggo.me/announce.php?passkey=your_passkey_in_control_panel
 
 ```
