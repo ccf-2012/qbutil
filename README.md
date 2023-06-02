@@ -79,6 +79,6 @@ python3 torls.py --delete  156c96
 python3 torls.py --tag-tracker
 
 # 修改一个站的tracker
-python3 torls.py --site piggo --edit-tracker 'https://tracker.piggo.me/announce.php?passkey=your_passkey_in_control_panel
+python3 torls.py --site ptsite --edit-tracker 'https://tracker.site.pt/announce.php?passkey=your_passkey_in_control_panel
 
 ```
