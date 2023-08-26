@@ -210,7 +210,7 @@ def deleteCrossedTorrents(matchHash):
 def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description='a qbittorrent utils')
-    parser.add_argument('-C', '--config', help='config file.')
+    parser.add_argument('-c', '--config', help='config file.')
     parser.add_argument('--list',
                         action='store_true',
                         help='list torrents of cross seeding.')

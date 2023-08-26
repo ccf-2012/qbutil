@@ -82,3 +82,18 @@ python3 torls.py --tag-tracker
 python3 torls.py --site ptsite --edit-tracker 'https://tracker.site.pt/announce.php?passkey=your_passkey_in_control_panel
 
 ```
+
+
+# torstart
+```
+python torstart.py -h
+usage: torstart.py [-h] [-C CONFIG]
+
+start paused torrent one by one when network not busy.
+
+options:
+  -h, --help            show this help message and exit
+  -C CONFIG, --config CONFIG
+                        config file.
+```
+
