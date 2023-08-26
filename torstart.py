@@ -62,6 +62,7 @@ def start_paused_torrents():
                 currrent_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
                 qb = connect_to_qbittorrent()
                 paused_torrents = get_paused_torrents(qb)
+                print(f"{len(paused_torrents)} torrents in qbit.")
                 if paused_torrents:
                     # paused_torrents.sort(key=lambda x: x.added_on)
                     torrent_to_start = paused_torrents[0]
@@ -72,7 +73,9 @@ def start_paused_torrents():
                     break
             except Exception as e:
                 print(f"连接到 qbittorrent 失败：{str(e)}")
-        time.sleep(180)  # 每分钟检查一次网络流量
+        else:
+            print("Network busy, wait for 3 minutes.")
+            time.sleep(180)  # 每分钟检查一次网络流量
 
 
 def loadArgs():
