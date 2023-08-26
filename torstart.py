@@ -74,7 +74,7 @@ def start_paused_torrents():
             except Exception as e:
                 print(f"连接到 qbittorrent 失败：{str(e)}")
         else:
-            print("Network busy, wait for 3 minutes.")
+            print(f"Network busy: {current_speed:.2f} mbps, wait for 3 minutes.")
             time.sleep(180)  # 每分钟检查一次网络流量
 
 
