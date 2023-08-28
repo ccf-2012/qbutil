@@ -7,7 +7,7 @@ import os
 import re
 
 
-def connQb():
+def qbConnect():
     qbClient = qbittorrentapi.Client(host=CONFIG.qbServer,
                                      port=CONFIG.qbPort,
                                      username=CONFIG.qbUser,
@@ -21,7 +21,7 @@ def connQb():
 
 
 def qbAddWithTag(downlink, imdbtag):
-    qbClient = connQb()
+    qbClient = qbConnect()
     if not qbClient:
         return False
 
@@ -54,21 +54,21 @@ def qbDeleteTorrent(qbClient, tor_hash):
         print('There was an error during client.torrents_delete: %s', ex)
 
 
+NOT_WORKING_STATUS = 4
+def allTrackersNotWorking(trackers):
+    return all(tracker['status'] == NOT_WORKING_STATUS for tracker in trackers if tracker['status'] > 0)
+
+
 def listQbNotWorking():
-    qbClient = connQb()
+    qbClient = qbConnect()
     if not qbClient:
         return False
 
     countNotWorking = 0
     for torrent in qbClient.torrents_info(sort='name'):
-        # breakpoint()
-        # 这里偷懒了，多tracker情况这里就不对了，用者自行想办法了
-        tr3 = torrent.trackers[3]
-
-        # 列出tracker 未工作
-        if tr3['status'] == 4:
+        if allTrackersNotWorking(torrent.trackers):
             countNotWorking += 1
-            printTorrent(torrent, tr3["msg"])
+            printTorrent(torrent)
             torrent.addTags(['未工作'])
         else:
             torrent.removeTags(['未工作'])
@@ -77,33 +77,37 @@ def listQbNotWorking():
 
 
 def tagTracker():
-    qbClient = connQb()
+    qbClient = qbConnect()
     if not qbClient:
         return False
 
     countNotWorking = 0
     for torrent in qbClient.torrents_info(sort='name'):
-        # breakpoint()
-        # 这里偷懒了，多tracker情况这里就不对了，用者自行想办法了
-        tr3 = torrent.trackers[3]
-
-        # 列出tracker 未工作
-        if tr3['status'] == 4:
+        if allTrackersNotWorking(torrent.trackers):
             countNotWorking += 1
-            printTorrent(torrent, tr3["msg"])
+            printTorrent(torrent)
             torrent.addTags(['未工作'])
         else:
             torrent.removeTags()
-            printTorrent(torrent, tr3["msg"])
+            printTorrent(torrent)
             torrent.addTags([abbrevTracker(torrent.tracker)])
+
     print(f'Total not working: {countNotWorking}')
 
 
-def printTorrent(torrent, trackMessage=''):
+def getTorrentFirstTracker(torrent):
+    noneTracker = {"url": "", "msg": ""}
+    firstTracker = next(
+        (tracker for tracker in torrent.trackers if tracker['status'] > 0), noneTracker)
+    return firstTracker
+
+
+def printTorrent(torrent):
+    firstTracker = getTorrentFirstTracker(torrent)
     print(f'{torrent.hash[:6]}: \033[32m{torrent.name}\033[0m' +
           f' ({HumanBytes.format(torrent.total_size, True)})' +
-          f' - \033[31m {abbrevTracker(torrent.tracker)}\033[0m' +
-          f'    \033[34m  {trackMessage} \033[0m')
+          f' - \033[31m {abbrevTracker(firstTracker["url"])}\033[0m' +
+          f'    \033[34m  {firstTracker["msg"]} \033[0m')
 
 
 def torSameSize(sizeA, sizeB):
@@ -136,8 +140,9 @@ def matchTitleNotRegex(torname):
             return True
     return False
 
+
 def editTorrentsTracker(trackerAbrev, newTrackerUrl):
-    qbClient = connQb()
+    qbClient = qbConnect()
     if not qbClient:
         return False
     allTorrents = qbClient.torrents_info(sort='total_size')
@@ -145,44 +150,54 @@ def editTorrentsTracker(trackerAbrev, newTrackerUrl):
     for tor in allTorrents:
         if abbrevTracker(tor.tracker) == trackerAbrev:
             printTorrent(tor)
-            tr3 = tor.trackers[3]
-            tor.edit_tracker(tr3['url'], newTrackerUrl)
+            firstTracker = next(
+                (tracker for tracker in tor.trackers if tracker['status'] > 0), None)
+            tor.edit_tracker(firstTracker['url'], newTrackerUrl)
 
-def listCrossedTorrents(withoutTrks=[], sizeGt=0):
-    qbClient = connQb()
+
+def listCrossedTorrents(withTrks=[], withoutTrks=[], sizeGt=0):
+    qbClient = qbConnect()
     if not qbClient:
         return False
 
     allTorrents = qbClient.torrents_info(sort='total_size')
-    matchCount = 0
+    matchGroupCount = 0
+    matchTorCount = 0
     iterList = iter(allTorrents)
     tor = next(iterList, None)
-    while tor and tor.total_size < sizeGt:
-        tor = next(iterList, None)
+    if sizeGt > 0:
+        while tor and tor.total_size < sizeGt:
+            tor = next(iterList, None)
 
     while tor:
-        if matchTitleNotRegex(tor.name):
-            tor = next(iterList, None)
-            continue
+        if ARGS.name_not_regex:
+            while tor and re.search(ARGS.name_not_regex, tor.name, flags=re.A):
+                tor = next(iterList, None)
 
         reseedList = []
         groupSize = tor.total_size
         groupTor = tor
         while tor and torSameSize(tor.total_size, groupSize):
-            reseedList.append(abbrevTracker(tor.tracker))
+            firstTracker = getTorrentFirstTracker(tor)
+            reseedList.append(abbrevTracker(firstTracker["url"]))
             tor = next(iterList, None)
 
-        if not withoutTrks or (withoutTrks and not [z for z in withoutTrks if z in reseedList]):
-            matchCount += 1
-            print(f'{matchCount} -------------------')
-            printTorrent(groupTor)
-            print("    - " + str(reseedList))
+        if len(reseedList) > 0:
+            if (not withTrks or (withTrks and all(x in reseedList for x in withTrks))) and (not withoutTrks or (withoutTrks and all(y not in reseedList for y in withoutTrks))):
+                matchGroupCount += 1
+                matchTorCount += len(reseedList)
+                print(f'{matchGroupCount} -------------------')
+                printTorrent(groupTor)
+                print("    - " + str(reseedList))
+        # else: 
+        #     print(f'Not match ===========')   
+        #     printTorrent(groupTor)
 
-    print(f'Total torrents: {len(allTorrents)}')
+    print(f'Total torrents: {len(allTorrents)}, matched: {matchTorCount} torrents, {matchGroupCount} groups')
 
 
 def deleteCrossedTorrents(matchHash):
-    qbClient = connQb()
+    qbClient = qbConnect()
     if not qbClient:
         return False
 
@@ -216,11 +231,14 @@ def loadArgs():
                         help='list torrents of cross seeding.')
     parser.add_argument('--list-without',
                         help='list torrents without trackers...')
+    parser.add_argument('--list-with',
+                        help='list torrents with trackers...')
     parser.add_argument('--size-gt',
                         type=int,
                         help='list torrents with size greater than...')
     parser.add_argument('--delete', help='delete reseeding torrents of hash')
-    parser.add_argument('--name-not-regex', help='regex to not match the tor name.')
+    parser.add_argument('--name-not-regex',
+                        help='regex to not match the tor name.')
     parser.add_argument('--not-working',
                         action='store_true',
                         help='list torrents of not working.')
@@ -249,9 +267,12 @@ def main():
 
     if ARGS.list:
         listCrossedTorrents(sizeGt=ARGS.size_gt)
-    elif ARGS.list_without:
-        argTrks = ARGS.list_without.split(',')
-        listCrossedTorrents(withoutTrks=argTrks, sizeGt=ARGS.size_gt)
+    elif ARGS.list_without or ARGS.list_with:
+        argWithoutTrks = ARGS.list_without.split(
+            ',') if ARGS.list_without else []
+        argWithTrks = ARGS.list_with.split(',') if ARGS.list_with else []
+        listCrossedTorrents(withTrks=argWithTrks,
+                            withoutTrks=argWithoutTrks, sizeGt=ARGS.size_gt)
     elif ARGS.delete:
         deleteCrossedTorrents(ARGS.delete)
     elif ARGS.not_working:
@@ -260,7 +281,8 @@ def main():
         tagTracker()
     elif ARGS.edit_tracker:
         siteAbrev = ARGS.site
-        editTorrentsTracker(trackerAbrev=siteAbrev, newTrackerUrl=ARGS.edit_tracker)
+        editTorrentsTracker(trackerAbrev=siteAbrev,
+                            newTrackerUrl=ARGS.edit_tracker)
 
 
 if __name__ == '__main__':

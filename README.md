@@ -33,20 +33,20 @@ pass=MyQbitPassword
 
 ## 使用
 ```
-python torls.py -h
-
-usage: torls.py [-h] [-C CONFIG] [--list] [--list-without LIST_WITHOUT] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX] [--not-working] [--tag-tracker]
-                [--site SITE] [--edit-tracker EDIT_TRACKER]
+usage: torls.py [-h] [-c CONFIG] [--list] [--list-without LIST_WITHOUT] [--list-with LIST_WITH] [--size-gt SIZE_GT] [--delete DELETE] [--name-not-regex NAME_NOT_REGEX]
+                [--not-working] [--tag-tracker] [--site SITE] [--edit-tracker EDIT_TRACKER]
 
 a qbittorrent utils
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
-  -C CONFIG, --config CONFIG
+  -c CONFIG, --config CONFIG
                         config file.
   --list                list torrents of cross seeding.
   --list-without LIST_WITHOUT
                         list torrents without trackers...
+  --list-with LIST_WITH
+                        list torrents with trackers...
   --size-gt SIZE_GT     list torrents with size greater than...
   --delete DELETE       delete reseeding torrents of hash
   --name-not-regex NAME_NOT_REGEX
@@ -65,6 +65,9 @@ python3 torls.py --list
 
 # 列出没有在trackbits 辅种的种子
 python3 torls.py --list-without trackbits
+
+# 列出在 mmtbits 有辅种，但没在 pptbits 辅种的种子
+python3 torls.py --list-with mmtbits --list-without pptbits
 
 # 列出大于 20G， 且没有在trackbits,mmtbits 辅种
 python3 torls.py --list-without trackbits,mmtbits  --size-gt 20
