@@ -75,7 +75,7 @@ def start_paused_torrents():
                 print(f"连接到 qbittorrent 失败：{str(e)}")
         else:
             print(f"Network busy: {current_speed:.2f} mbps, wait for 3 minutes.")
-            time.sleep(180)  # 每分钟检查一次网络流量
+            time.sleep(180)  # 每3分钟检查一次网络流量
 
 
 def loadArgs():
