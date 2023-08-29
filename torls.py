@@ -252,7 +252,8 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
                     else:
                         print(f"{matchGroupCount} -------------------")
                         printTorrent(groupTor)
-                        print(f'added {days:.1f} days ago: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
+                        print(f'added {days:.1f} days ago: {groupTor["name"]} ')
+                        # print(f'added {days:.1f} days ago: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
                         print( f"sum seednum: {sum_seednum}, average seednum: {avg_seednum:.2f} min seednum: {min_seednum:.2f}" )
 
                         print("    - " + str(reseedSitenameList))
