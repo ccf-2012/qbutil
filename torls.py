@@ -132,9 +132,9 @@ def torSameSize(sizeA, sizeB):
     elif sizeA < 1000000000:
         return abs(sizeA - sizeB) < 2000
     elif sizeA < 50000000000:
-        return abs(sizeA - sizeB) < 10000
-    else:
         return abs(sizeA - sizeB) < 100000
+    else:
+        return abs(sizeA - sizeB) < 1000000
 
 
 def abbrevTracker(trackerstr):
