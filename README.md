@@ -106,7 +106,7 @@ python3 torls.py --cross-with mmtbits --cross-without pptbits --added-days 90 --
 python3 torls.py --cross-with mmtbits --cross-without pptbits --seed-min-gt 2 --delete --dryrun
 
 # 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，平均作种人数大于 1 (所有站除我外还有人在作种)
-python3 torls.py --cross-with mmtbits --cross-without pptbits --seed-avg-gt 2 --delete --dryrun
+python3 torls.py --cross-with mmtbits --cross-without pptbits --seed-avg-gt 1 --delete --dryrun
 
 
 # 删除hash为 156c96 开头的种子和所有辅种
