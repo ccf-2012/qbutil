@@ -235,7 +235,7 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
                     match_args = False
                 if ARGS.seed_avg_gt and avg_seednum < ARGS.seed_avg_gt:
                     match_args = False
-                if ARGS.added_days and days < ARGS.added_days:
+                if ARGS.days_gt and days < ARGS.days_gt:
                     match_args = False
 
                 if match_args:
@@ -252,9 +252,8 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
                     else:
                         print(f"{matchGroupCount} -------------------")
                         printTorrent(groupTor)
-                        print(f'added {days:.1f} days ago: {groupTor["name"]} ')
                         # print(f'added {days:.1f} days ago: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
-                        print( f"sum seednum: {sum_seednum}, average seednum: {avg_seednum:.2f} min seednum: {min_seednum:.2f}" )
+                        print( f"sum seednum: {sum_seednum}, average seednum: {avg_seednum:.2f} min seednum: {min_seednum:.2f}, added {days:.1f} days ago " )
 
                         print("    - " + str(reseedSitenameList))
 
@@ -316,7 +315,7 @@ def loadArgs():
         "--size-gt", type=int, help="list torrents with size greater than..."
     )
     parser.add_argument(
-        "--added-days", type=int, help="list torrents with size greater than..."
+        "--days-gt", type=int, help="list torrents with size greater than..."
     )
     parser.add_argument(
         "--delete", action="store_true", help="delete listed torrents of cross seeding."

@@ -33,9 +33,8 @@ pass=MyQbitPassword
 ```
 python torls.py -h
 
-python torls.py -h
 usage: torls.py [-h] [-c CONFIG] [--list] [--dryrun] [--cross-without CROSS_WITHOUT] [--cross-with CROSS_WITH] [--seed-min-gt SEED_MIN_GT]
-                [--seed-avg-gt SEED_AVG_GT] [--size-gt SIZE_GT] [--added-days ADDED_DAYS] [--delete] [--del-by-hash DEL_BY_HASH]
+                [--seed-avg-gt SEED_AVG_GT] [--size-gt SIZE_GT] [--days-gt DAYS_GT] [--delete] [--del-by-hash DEL_BY_HASH]
                 [--name-not-regex NAME_NOT_REGEX] [--not-working] [--tag-tracker] [--site SITE] [--edit-tracker EDIT_TRACKER]
 
 a qbittorrent utils
@@ -55,8 +54,7 @@ options:
   --seed-avg-gt SEED_AVG_GT
                         list torrents with seednum greater than...
   --size-gt SIZE_GT     list torrents with size greater than...
-  --added-days ADDED_DAYS
-                        list torrents with size greater than...
+  --days-gt DAYS_GT     list torrents with size greater than...
   --delete              delete listed torrents of cross seeding.
   --del-by-hash DEL_BY_HASH
                         delete reseeding torrents by hash
@@ -93,14 +91,14 @@ python3 torls.py --cross-without trackbits,mmtbits  --size-gt 20 --name-not-rege
 
 
 ## 删除种子及其辅种
-* 例子中的 `--dryrun` 表示仅打印信息，并不真正删种，实际使用时去掉
+* 例子中的 `--dryrun` 表示仅打印信息，并不真正删种，确认后去掉再运行
 ```sh
 
-# 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子
-python3 torls.py --cross-with mmtbits --cross-without pptbits --delete --dryrun
+# 删除没在 pptbits 作种的种子
+python3 torls.py --cross-without pptbits --delete --dryrun
 
-# 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，添加时间 大于90天的
-python3 torls.py --cross-with mmtbits --cross-without pptbits --added-days 90 --delete --dryrun
+# 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，所有站添加时间大于90天的
+python3 torls.py --cross-with mmtbits --cross-without pptbits --days-gt 90 --delete --dryrun
 
 # 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，所有站最小作种人数大于 2
 python3 torls.py --cross-with mmtbits --cross-without pptbits --seed-min-gt 2 --delete --dryrun
