@@ -102,10 +102,10 @@ python3 torls.py --cross-with mmtbits --cross-without pptbits --delete --dryrun
 # 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，添加时间 大于90天的
 python3 torls.py --cross-with mmtbits --cross-without pptbits --added-days 90 --delete --dryrun
 
-# 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，最小作种人数大于 2
+# 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，所有站最小作种人数大于 2
 python3 torls.py --cross-with mmtbits --cross-without pptbits --seed-min-gt 2 --delete --dryrun
 
-# 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，平均作种人数大于 1 (除我外还有人在作种)
+# 删除在 mmtbits 有辅种，但没在 pptbits 辅种的种子，平均作种人数大于 1 (所有站除我外还有人在作种)
 python3 torls.py --cross-with mmtbits --cross-without pptbits --seed-avg-gt 2 --delete --dryrun
 
 

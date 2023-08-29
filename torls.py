@@ -127,14 +127,14 @@ def printTorrent(torrent):
 
 
 def torSameSize(sizeA, sizeB):
-    if sizeA < 50000000:
+    if sizeA < 50000000:   # < 50M
         return sizeA == sizeB
-    elif sizeA < 1000000000:
-        return abs(sizeA - sizeB) < 2000
-    elif sizeA < 50000000000:
-        return abs(sizeA - sizeB) < 100000
-    else:
-        return abs(sizeA - sizeB) < 1000000
+    elif sizeA < 5000000000:  # < 5G, diff < 2K
+        return abs(sizeA - sizeB) < 2000   
+    elif sizeA < 50000000000:  # 5G <-> 50G, diff < 1M
+        return abs(sizeA - sizeB) < 1000000 
+    else:  # > 50G, diff < 2M
+        return abs(sizeA - sizeB) < 3000000 
 
 
 def abbrevTracker(trackerstr):
@@ -192,6 +192,7 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
     allTorrents = qbClient.torrents_info(sort="total_size")
     matchGroupCount = 0
     matchTorCount = 0
+    matchSize = 0
     iterList = iter(allTorrents)
     tor = next(iterList, None)
     if ARGS.size_gt:
@@ -224,27 +225,23 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
                 )
             ):
                 match_args = True
-                if ARGS.seed_min_gt or ARGS.seed_avg_gt:
-                    min_seednum = min(reseedList, key=compare_seednum)['num_complete']
-                    sum_seednum = sum(item["num_complete"] for item in reseedList)
-                    avg_seednum = sum_seednum / len(reseedList)
-                    if ARGS.seed_min_gt and (min_seednum < ARGS.seed_min_gt):
-                        print(f'Not match: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
-                        print( f"sum seednum: {sum_seednum}, average seednum: {avg_seednum:.2f} min seednum: {min_seednum:.2f}" )
-                        match_args = False
-                    if ARGS.seed_avg_gt and avg_seednum < ARGS.seed_avg_gt:
-                        print(f'Not match:: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
-                        print( f"sum seednum: {sum_seednum}, average seednum: {avg_seednum:.2f} min seednum: {min_seednum:.2f}" )
-                        match_args = False
-                if ARGS.added_days:
-                    min_seed_time = min(item["completion_on"] for item in reseedList)
-                    days = (time.time() - min_seed_time) / 86400
-                    if days > ARGS.added_days:
-                        print(f'added {days:.1f} days ago: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
-                        match_args = False
+                min_seednum = min(reseedList, key=compare_seednum)['num_complete']
+                sum_seednum = sum(item["num_complete"] for item in reseedList)
+                avg_seednum = sum_seednum / len(reseedList)
+                min_seed_time = min(item["completion_on"] for item in reseedList)
+                days = (time.time() - min_seed_time) / 86400
+
+                if ARGS.seed_min_gt and (min_seednum < ARGS.seed_min_gt):
+                    match_args = False
+                if ARGS.seed_avg_gt and avg_seednum < ARGS.seed_avg_gt:
+                    match_args = False
+                if ARGS.added_days and days < ARGS.added_days:
+                    match_args = False
+
                 if match_args:
                     matchGroupCount += 1
                     matchTorCount += len(reseedList)
+                    matchSize += groupSize
                     if ARGS.delete:
                         # delCrossedTorrentsByHash(groupTor["hash"])
                         for deltor in reseedList:
@@ -255,13 +252,16 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
                     else:
                         print(f"{matchGroupCount} -------------------")
                         printTorrent(groupTor)
+                        print(f'added {days:.1f} days ago: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
+                        print( f"sum seednum: {sum_seednum}, average seednum: {avg_seednum:.2f} min seednum: {min_seednum:.2f}" )
+
                         print("    - " + str(reseedSitenameList))
 
         # else:
         #     print(f'Not match ===========')
 
     print(
-        f"Total torrents: {len(allTorrents)}, matched: {matchTorCount} torrents, {matchGroupCount} cross"
+        f"Total: {len(allTorrents)}, matched: {matchTorCount}, {matchGroupCount} cross, {HumanBytes.format(matchSize, True)}"
     )
 
 
