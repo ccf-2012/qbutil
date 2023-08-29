@@ -228,14 +228,13 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
                     min_seednum = min(reseedList, key=compare_seednum)['num_complete']
                     sum_seednum = sum(item["num_complete"] for item in reseedList)
                     avg_seednum = sum_seednum / len(reseedList)
-                    print(
-                        f"sum seednum = {sum_seednum}, average seednum = {avg_seednum:.2f}"
-                    )
                     if ARGS.seed_min_gt and (min_seednum < ARGS.seed_min_gt):
-                        print(f"min seednum: {min_seednum:.2f}.")
+                        print(f'Not match: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
+                        print( f"sum seednum: {sum_seednum}, average seednum: {avg_seednum:.2f} min seednum: {min_seednum:.2f}" )
                         match_args = False
                     if ARGS.seed_avg_gt and avg_seednum < ARGS.seed_avg_gt:
-                        print(f"avg seednum: {avg_seednum:.2f}.")
+                        print(f'Not match:: {groupTor["name"]} ({HumanBytes.format(groupTor["size"], True)})')
+                        print( f"sum seednum: {sum_seednum}, average seednum: {avg_seednum:.2f} min seednum: {min_seednum:.2f}" )
                         match_args = False
                 if ARGS.added_days:
                     min_seed_time = min(item["completion_on"] for item in reseedList)
