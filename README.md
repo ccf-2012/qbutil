@@ -124,13 +124,14 @@ python3 torls.py --site ptsite --edit-tracker 'https://tracker.site.pt/announce.
 # torstart
 ```
 python torstart.py -h
-usage: torstart.py [-h] [-C CONFIG]
+usage: torstart.py [-h] [-c CONFIG] [-d]
 
 start paused torrent one by one when network not busy.
 
 options:
   -h, --help            show this help message and exit
-  -C CONFIG, --config CONFIG
+  -c CONFIG, --config CONFIG
                         config file.
-```
+  -d, --deluge          deluge.
+  ```
 
