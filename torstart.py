@@ -1,38 +1,101 @@
 import os
+import sys
 import argparse
 import psutil
 import time
 import qbittorrentapi
+import deluge_client
 from cfgdata import ConfigData
-
+from loguru import logger
 
 # 网络流量低于此阈值时，启动最早暂停的种子（以 KB/s 为单位）
 THRESHOLD = 10000
 
 
-def connect_to_qbittorrent():
-    qbClient = qbittorrentapi.Client(
-        host=CONFIG.qbServer,
-        port=CONFIG.qbPort,
-        username=CONFIG.qbUser,
-        password=CONFIG.qbPass,
-    )
-    try:
-        qbClient.auth_log_in()
-    except qbittorrentapi.LoginFailed as e:
-        print(e)
+def getClient(downloader):
+    if downloader == 'qb':
+        return QBitClient('qb', CONFIG.qbServer, CONFIG.qbPort, CONFIG.qbUser, CONFIG.qbPass)
+    if downloader == 'de':
+        return DelugeClient('de', CONFIG.deServer, CONFIG.dePort, CONFIG.deUser, CONFIG.dePass)
+    
 
-    return qbClient
+class DownloadClientBase():
+    def __init__(self, downloader, host, port, username, password):
+        self.downloader = downloader
+        self.host = host
+        self.port = port
+        self.username = username
+        self.password = password
+
+    def connect(self):
+        pass
+    
+    def get_paused_torrents(self):
+        pass
+
+class QBitClient(DownloadClientBase):
+    def connect(self, ):
+        logger.info('Connecting to ' + self.host + ':' + str(self.port))
+        self.qbClient = qbittorrentapi.Client(
+            host=self.host,
+            port=self.port,
+            username=self.username,
+            password=self.password,
+        )
+        try:
+            self.qbClient.auth_log_in()
+        except qbittorrentapi.LoginFailed as e:
+            print(e)
+
+        return self.qbClient
+
+    def getFirstPausedTorrentHash(self):
+        torlist = self.qbClient.torrents_info(status_filter="paused", sort="added_on")
+        return torlist[0]
+
+    def startTorrent(self, torrent_hash):
+        self.qbClient.torrents_resume(torrent_hash)
+
+class DelugeClient(DownloadClientBase):
+    def connect(self):
+        if self.downloader != 'de':
+            return None
+
+        logger.info('Connecting to ' + self.host + ':' + str(self.port))
+        self.deClient = deluge_client.DelugeRPCClient(
+            self.host, int(self.port),
+            self.username, self.password)
+        try:
+            self.deClient.connect()
+        except:
+            logger.warning('Could not create DelugeRPCClient Object...')
+            return None
+        logger.success('Connected to '+self.host)
+        return self.deClient
 
 
-# 获取暂停的种子列表
-def get_paused_torrents(qb):
-    return qb.torrents_info(status_filter="paused", sort="added_on")
+    def getFirstPausedTorrentHash(self):
+        if not self.deClient.connected:
+            return ''
+        torList = self.deClient.call(
+            'core.get_torrents_status', {"state": "Paused"}, [
+                'name', 'hash', 'download_location', 'save_path', 'total_size',
+                'tracker_host', 'time_added', 'state'
+            ])
+        return list(torList)[0].decode() if len(torList) > 0 else ''
 
 
-# 启动种子下载
-def start_torrent_download(qb, torrent_hash):
-    qb.torrents_resume(torrent_hash)
+    def startTorrent(self, tor_hash):
+        try:
+            st = self.deClient.call('core.get_torrent_status', tor_hash,
+                                    ['state'])
+            if st[b'state'] == b'Paused':
+                self.deClient.call('core.resume_torrent', [tor_hash])
+            # else:
+                # self.deClient.call('core.pause_torrent', [tor_hash])
+        except Exception as ex:
+            logger.error(
+                'There was an error during core.get_torrent_status: %s', ex)
 
 
 # 检查网络速度
@@ -53,26 +116,26 @@ def calc_network_speed():
     return upload_speed
 
 
+
 # 监测网络流量逐一启动暂停的种子
 def start_paused_torrents():
-    while True:
+    client = getClient('de') if ARGS.deluge else getClient('qb')
+    while True and client:
         current_speed = calc_network_speed()
         if current_speed < THRESHOLD:
             try:
                 currrent_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-                qb = connect_to_qbittorrent()
-                paused_torrents = get_paused_torrents(qb)
-                print(f"{len(paused_torrents)} torrents in qbit.")
-                if paused_torrents:
-                    # paused_torrents.sort(key=lambda x: x.added_on)
-                    torrent_to_start = paused_torrents[0]
-                    start_torrent_download(qb, torrent_to_start.hash)
-                    print(f"{currrent_time} 启动种子：{torrent_to_start.name}")
+
+                client.connect()
+                paused_torrent_hash = client.getFirstPausedTorrentHash()
+                if paused_torrent_hash:
+                    client.startTorrent(paused_torrent_hash)
+                    # print(f"{currrent_time} 启动种子：{torrent_to_start.name}")
                 else:
                     print(f"{currrent_time} 所有种子已经启动。")
                     break
             except Exception as e:
-                print(f"连接到 qbittorrent 失败：{str(e)}")
+                print(f"连接到 Client 失败：{str(e)}")
         else:
             print(f"Network busy: {current_speed:.2f} mbps, wait for 3 minutes.")
             time.sleep(180)  # 每分钟检查一次网络流量
@@ -84,6 +147,7 @@ def loadArgs():
         description="start paused torrent one by one when network not busy."
     )
     parser.add_argument("-c", "--config", help="config file.")
+    parser.add_argument("-d", "--deluge", action='store_true', help="deluge.")
     ARGS = parser.parse_args()
     if not ARGS.config:
         ARGS.config = os.path.join(os.path.dirname(__file__), "config.ini")
@@ -97,7 +161,7 @@ def main():
     CONFIG = ConfigData()
     CONFIG.readConfig(ARGS.config)
 
-    if CONFIG.qbServer:
+    if CONFIG.qbServer or CONFIG.deServer:
         # 启动流量监测并启动种子
         start_paused_torrents()
         print("任务完成。")
@@ -105,4 +169,7 @@ def main():
         print("config.ini 没有配置好。")
 
 if __name__ == "__main__":
+    logger.remove()
+    formatstr = "{time:YYYY-MM-DD HH:mm:ss} | <level>{level: <8}</level> | - <level>{message}</level>"
+    logger.add(sys.stdout, format=formatstr)
     main()
