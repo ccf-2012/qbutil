@@ -120,13 +120,12 @@ def calc_network_speed():
 # 监测网络流量逐一启动暂停的种子
 def start_paused_torrents():
     client = getClient('de') if ARGS.deluge else getClient('qb')
+    client.connect()
     while True and client:
         current_speed = calc_network_speed()
         if current_speed < THRESHOLD:
             try:
                 currrent_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-
-                client.connect()
                 paused_torrent_hash = client.getFirstPausedTorrentHash()
                 if paused_torrent_hash:
                     client.startTorrent(paused_torrent_hash)
