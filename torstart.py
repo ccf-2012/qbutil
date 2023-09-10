@@ -9,7 +9,7 @@ from cfgdata import ConfigData
 from loguru import logger
 
 # 网络流量低于此阈值时，启动最早暂停的种子（以 KB/s 为单位）
-THRESHOLD = 10000
+THRESHOLD = 30000
 
 
 def getClient(downloader):
@@ -136,7 +136,7 @@ def start_paused_torrents():
             except Exception as e:
                 print(f"连接到 Client 失败：{str(e)}")
         else:
-            print(f"Network busy: {current_speed:.2f} mbps, wait for 3 minutes.")
+            print(f"Network busy: {current_speed/1000:.2f} mbps, wait for 3 minutes.")
             time.sleep(180)  # 每3分钟检查一次网络流量
 
 
