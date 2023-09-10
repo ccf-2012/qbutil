@@ -135,6 +135,7 @@ def start_paused_torrents():
                 if paused_torrent_hash:
                     client.startTorrent(paused_torrent_hash)
                     logger.success(f"{currrent_time} 启动种子：{paused_torrent_name}")
+                    time.sleep(10)
                 else:
                     logger.success(f"{currrent_time} 所有种子已经启动。")
                     break
