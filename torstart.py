@@ -51,7 +51,7 @@ class QBitClient(DownloadClientBase):
 
     def getFirstPausedTorrentHash(self):
         torlist = self.qbClient.torrents_info(status_filter="paused", sort="added_on")
-        return torlist[0]
+        return torlist[0].hash, torlist[0].name
 
     def startTorrent(self, torrent_hash):
         self.qbClient.torrents_resume(torrent_hash)
@@ -82,7 +82,12 @@ class DelugeClient(DownloadClientBase):
                 'name', 'hash', 'download_location', 'save_path', 'total_size',
                 'tracker_host', 'time_added', 'state'
             ])
-        return list(torList)[0].decode() if len(torList) > 0 else ''
+        hash = list(torList)[0].decode() if len(torList) > 0 else ''
+        if hash:
+            torname = torList[hash]['name']
+            return hash, torname
+        else:
+            return '', ''
 
 
     def startTorrent(self, tor_hash):
@@ -100,7 +105,7 @@ class DelugeClient(DownloadClientBase):
 
 # 检查网络速度
 def calc_network_speed():
-    interval = 1
+    interval = 2
     t0 = time.time()
     upload0 = psutil.net_io_counters().bytes_sent
     download0 = psutil.net_io_counters().bytes_recv
@@ -126,17 +131,17 @@ def start_paused_torrents():
         if current_speed < THRESHOLD:
             try:
                 currrent_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-                paused_torrent_hash = client.getFirstPausedTorrentHash()
+                paused_torrent_hash, paused_torrent_name = client.getFirstPausedTorrentHash()
                 if paused_torrent_hash:
                     client.startTorrent(paused_torrent_hash)
-                    # print(f"{currrent_time} 启动种子：{torrent_to_start.name}")
+                    logger.success(f"{currrent_time} 启动种子：{paused_torrent_name}")
                 else:
-                    print(f"{currrent_time} 所有种子已经启动。")
+                    logger.success(f"{currrent_time} 所有种子已经启动。")
                     break
             except Exception as e:
-                print(f"连接到 Client 失败：{str(e)}")
+                logger.error(f"连接到 Client 失败：{str(e)}")
         else:
-            print(f"Network busy: {current_speed/1000:.2f} mbps, wait for 3 minutes.")
+            logger.info(f"Network busy: {current_speed/1000:.2f} mbps, wait for 3 minutes.")
             time.sleep(180)  # 每3分钟检查一次网络流量
 
 
