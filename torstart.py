@@ -51,7 +51,10 @@ class QBitClient(DownloadClientBase):
 
     def getFirstPausedTorrentHash(self):
         torlist = self.qbClient.torrents_info(status_filter="paused", sort="added_on")
-        return torlist[0].hash, torlist[0].name
+        if len(torlist) > 0:
+            return torlist[0].hash, torlist[0].name
+        else: 
+            return '', ''
 
     def startTorrent(self, torrent_hash):
         self.qbClient.torrents_resume(torrent_hash)
