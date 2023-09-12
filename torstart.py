@@ -85,10 +85,9 @@ class DelugeClient(DownloadClientBase):
                 'name', 'hash', 'download_location', 'save_path', 'total_size',
                 'tracker_host', 'time_added', 'state'
             ])
-        hash = list(torList)[0].decode() if len(torList) > 0 else ''
-        if hash:
-            torname = torList[hash]['name']
-            return hash, torname
+        firstEle = next(iter(torList.items()), None)
+        if firstEle:
+            return firstEle[0].decode(), firstEle[1]['name']
         else:
             return '', ''
 
