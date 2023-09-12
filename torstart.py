@@ -87,7 +87,7 @@ class DelugeClient(DownloadClientBase):
             ])
         firstEle = next(iter(torList.items()), None)
         if firstEle:
-            return firstEle[0].decode(), firstEle[1]['name']
+            return firstEle[0].decode(), firstEle[1][b'name'].decode()
         else:
             return '', ''
 
