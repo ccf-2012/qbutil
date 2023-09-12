@@ -228,7 +228,7 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
                 min_seednum = min(reseedList, key=compare_seednum)['num_complete']
                 sum_seednum = sum(item["num_complete"] for item in reseedList)
                 avg_seednum = sum_seednum / len(reseedList)
-                min_seed_time = min(item["completion_on"] for item in reseedList)
+                min_seed_time = min(item["completion_on"] for item in reseedList if item["completion_on"])
                 days = (time.time() - min_seed_time) / 86400
 
                 if ARGS.seed_min_gt and (min_seednum < ARGS.seed_min_gt):
@@ -348,7 +348,7 @@ def main():
 
     if ARGS.list:
         listCrossedTorrents()
-    elif ARGS.cross_without or ARGS.cross_with:
+    elif ARGS.cross_without or ARGS.cross_with or ARGS.seed_avg_gt or ARGS.days_gt:
         argWithoutTrks = ARGS.cross_without.split(",") if ARGS.cross_without else []
         argWithTrks = ARGS.cross_with.split(",") if ARGS.cross_with else []
         listCrossedTorrents(withTrks=argWithTrks, withoutTrks=argWithoutTrks)
