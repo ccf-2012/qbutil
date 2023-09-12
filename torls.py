@@ -137,6 +137,16 @@ def torSameSize(sizeA, sizeB):
         return abs(sizeA - sizeB) < 3000000 
 
 
+def sameTor(tor1, tor2):
+    if tor1.name == tor2.name:
+        return True
+    loc1 = os.path.join(tor1.save_path, tor1.name) 
+    loc2 = os.path.join(tor2.save_path, tor2.name)
+    if os.path.islink(loc1) or os.path.islink(loc2):
+        if torSameSize(tor1.total_size, tor2.total_size):
+            return True
+    return False
+
 def abbrevTracker(trackerstr):
     hostnameList = urllib.parse.urlparse(trackerstr).netloc.split(".")
     if len(hostnameList) == 2:
@@ -207,8 +217,10 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
         # find cross-seed torrents by same size
         reseedList = []
         groupSize = tor.total_size
+        # groupSavePath = tor.save_path
         groupTor = tor
-        while tor and torSameSize(tor.total_size, groupSize):
+        # while tor and torSameLocation(tor.save_path, groupSavePath):
+        while tor and sameTor(tor, groupTor):
             reseedList.append(tor)
             tor = next(iterList, None)
 
