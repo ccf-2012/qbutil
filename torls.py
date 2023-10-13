@@ -6,6 +6,7 @@ from cfgdata import ConfigData
 import os
 import time
 import re
+import shutil
 
 
 def qbConnect():
@@ -59,8 +60,6 @@ def qbDeleteTorrent(qbClient, tor_hash):
 
 
 NOT_WORKING_STATUS = 4
-
-
 def allTrackersNotWorking(trackers):
     return all(
         tracker["status"] == NOT_WORKING_STATUS
@@ -276,6 +275,67 @@ def listCrossedTorrents(withTrks=[], withoutTrks=[]):
         f"Total: {len(allTorrents)}, matched: {matchTorCount}, {matchGroupCount} cross, {HumanBytes.format(matchSize, True)}"
     )
 
+def get_first_file_or_dir(directory):
+    if os.path.isfile(directory):
+        return os.path.basename(directory)
+    files = os.listdir(directory)
+    if files:
+        return files[0]
+    else:
+        return None
+
+def find_non_tor_files(checkdir, torlist):
+    non_tor_files = []
+    for subdir in os.listdir(checkdir):
+        # breakpoint()
+        # matches = [tor for tor in torlist if subdir in tor]
+        # matches = [tor for tor in torlist if subdir in tor]
+        # matches = list(filter(lambda a: subdir in a, torlist))
+        if not any(subdir in tor for tor in torlist):
+            non_tor_files.append(os.path.join(checkdir, subdir))
+        # subdirpath = os.path.join(checkdir, subdir)
+        # onediritem = get_first_file_or_dir(subdirpath)
+        # if onediritem not in torlist:
+        #     non_tor_files.append(os.path.join(subdirpath, onediritem))
+    
+    return non_tor_files
+
+
+def checkTorrentFiles(checkdir):
+    qbClient = qbConnect()
+    if not qbClient:
+        return False
+
+    torlist = []
+    sumTorSize = 0
+    for torrent in qbClient.torrents_info(sort="name"):
+        contentPath = os.path.join(torrent["save_path"], torrent["name"])
+        # contentPath = torrent["name"]
+        torlist.append(contentPath)
+        sumTorSize += torrent.total_size
+        print(f"{contentPath} - {HumanBytes.format(torrent.total_size, True)}")
+    print(
+        f"Total size in qbit: {len(torlist)}, {HumanBytes.format(sumTorSize, True)}"
+    )
+
+    non_tor_files = find_non_tor_files(checkdir, torlist)
+    for file_path in non_tor_files:
+        if ARGS.delete:
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    print(f"delete: {file_path}")
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    print(f"rmtree: {file_path}")
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+        else:
+            print(file_path)
+    print(f"Not torrent dir: {len(non_tor_files)}")
+
+
 
 def delCrossedTorrentsByHash(matchHash):
     qbClient = qbConnect()
@@ -309,6 +369,7 @@ def loadArgs():
     global ARGS
     parser = argparse.ArgumentParser(description="a qbittorrent utils")
     parser.add_argument("-c", "--config", help="config file.")
+    parser.add_argument("--check", help="check torrent file.")
     parser.add_argument(
         "--list", action="store_true", help="list torrents of cross seeding."
     )
@@ -358,7 +419,10 @@ def main():
     CONFIG = ConfigData()
     CONFIG.readConfig(ARGS.config)
 
-    if ARGS.list:
+    if ARGS.check:
+        checkdir = os.path.expanduser(ARGS.check)
+        checkTorrentFiles(checkdir)
+    elif ARGS.list:
         listCrossedTorrents()
     elif ARGS.cross_without or ARGS.cross_with or ARGS.seed_avg_gt or ARGS.days_gt:
         argWithoutTrks = ARGS.cross_without.split(",") if ARGS.cross_without else []
