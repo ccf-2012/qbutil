@@ -174,16 +174,25 @@ def editTorrentsTracker(trackerAbrev, newTrackerUrl):
     allTorrents = qbClient.torrents_info(sort="total_size")
     print(f"Total torrents: {len(allTorrents)}")
     for tor in allTorrents:
-        if abbrevTracker(tor.tracker) == trackerAbrev:
+        trackers_to_edit = [
+            tracker for tracker in tor.trackers
+            if abbrevTracker(tracker["url"]) == trackerAbrev
+        ]
+
+        if trackers_to_edit:
             printTorrent(tor)
-            firstTracker = next(
-                (tracker for tracker in tor.trackers if tracker["status"] > 0), None
-            )
-            if firstTracker:
+            for tracker in trackers_to_edit:
+                orig_url = tracker["url"]
+                if orig_url == newTrackerUrl:
+                    print(f"    Tracker {orig_url} is already the new tracker URL. Skipping.")
+                    continue
                 try:
-                    tor.edit_tracker(firstTracker["url"], newTrackerUrl)
+                    tor.edit_tracker(orig_url, newTrackerUrl)
+                    print(f"    Successfully changed tracker from {orig_url} to {newTrackerUrl}")
                 except Conflict409Error:
-                    print(f'    Tracker already exists for this torrent.')
+                    print(f"    Tracker {newTrackerUrl} already exists for this torrent (original: {orig_url}). Skipping.")
+                except Exception as e:
+                    print(f"    Error editing tracker {orig_url} to {newTrackerUrl}: {e}")
 
 
 def compare_seednum(item):
