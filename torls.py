@@ -1,5 +1,6 @@
 import argparse
 import qbittorrentapi
+from qbittorrentapi.exceptions import Conflict409Error
 import urllib.parse
 from humanbytes import HumanBytes
 from cfgdata import ConfigData
@@ -178,7 +179,11 @@ def editTorrentsTracker(trackerAbrev, newTrackerUrl):
             firstTracker = next(
                 (tracker for tracker in tor.trackers if tracker["status"] > 0), None
             )
-            tor.edit_tracker(firstTracker["url"], newTrackerUrl)
+            if firstTracker:
+                try:
+                    tor.edit_tracker(firstTracker["url"], newTrackerUrl)
+                except Conflict409Error:
+                    print(f'    Tracker already exists for this torrent.')
 
 
 def compare_seednum(item):
